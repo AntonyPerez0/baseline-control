@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#14222d">
+<meta name="description" content="A configuration and data management simulator. Audit change packages, classify Class I and Class II changes, run the change control board, answer status accounting, and climb from E1 to E5.">
+<title>Baseline Control</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Saira+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<header class="topbar" id="topbar" hidden></header>
+<main id="main"><div class="wrap" id="view"></div></main>
+<div id="modal-root"></div>
+<div id="toasts" aria-live="polite"></div>
+
+<noscript><div class="wrap" style="padding:24px"><h1>Baseline Control</h1><p>This simulator needs JavaScript.</p></div></noscript>
+
+<!-- ordinary scripts, loaded in order. No build step, no modules, so this page
+     also works when opened straight from disk. -->
+<script src="src/03-core.js"></script>
+<script src="src/04-world.js"></script>
+<script src="src/05-changes.js"></script>
+<script src="src/06-release.js"></script>
+<script src="src/07-tasks-a.js"></script>
+<script src="src/08-tasks-b.js"></script>
+<script src="src/09-tasks-c.js"></script>
+<script src="src/10-codex.js"></script>
+<script src="src/11-store.js"></script>
+<script src="src/12-engine.js"></script>
+<script src="src/13-ui-items.js"></script>
+<script src="src/14-ui-core.js"></script>
+<script src="src/15-boot-sw.js"></script>
+</body>
+</html>
