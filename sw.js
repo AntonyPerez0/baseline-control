@@ -1,7 +1,7 @@
 /* Baseline Control service worker.
    Stale while revalidate for same origin GETs: the page opens instantly from
    cache and quietly updates itself, so a deploy reaches you on the next load. */
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 const CACHE = "baseline-control-" + VERSION;
 const SHELL = [
   "./",

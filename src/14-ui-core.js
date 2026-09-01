@@ -39,8 +39,9 @@ function renderTop(){
   var L = B.LEVELS[S.level-1];
   var nextXp = S.level < 5 ? B.LEVELS[S.level].xp : null;
   var h = '<div class="wrap"><div class="topgrid">';
-  h += '<div class="brandcell">' + mark() + '<div><div class="nm">Baseline Control</div>' +
-       '<div class="sub">' + e(S.world.prog.name) + ' &middot; ' + e(L.code) + " " + e(L.title) + '</div></div></div>';
+  h += '<button class="brandcell" data-act="menu" title="Back to the main menu">' + mark() +
+       '<span><span class="nm">Baseline Control</span>' +
+       '<span class="sub">' + (S.mode === "teach" ? "Teach mode" : e(S.world.prog.name) + ' &middot; ' + e(L.code) + " " + e(L.title)) + '</span></span></button>';
   if (S.mode === "teach"){
     var ts = window.BCTEACH ? window.BCTEACH.topStats() : { pct:0, done:0, total:0, lesson:"", title:"", module:"" };
     h += '<div class="metercell">' +
@@ -78,10 +79,11 @@ function renderTop(){
   h += navbtn("codex", "Codex", 0);
   h += '<button data-act="help">How this works</button>';
   h += '<button data-act="theme" title="Switch between the vellum and blueprint themes">Theme</button>';
+  h += '<button data-act="menu" title="Career, drill and teach all live on the main menu">Main menu</button>';
   h += '<span class="savetag" title="Progress is written to this browser after every item">' +
        (ST.available() ? e(ST.sinceText() || "autosave on") : "not saving") + '</span>';
   if (S.mode === "career") h += '<button data-act="endday" style="margin-left:auto;color:var(--stamp)">End the day</button>';
-  else h += '<button data-act="switch" style="margin-left:auto">' + (S.mode === "teach" ? "Leave teach mode" : "Switch save") + '</button>';
+  else h += '<button data-act="menu" style="margin-left:auto">' + (S.mode === "teach" ? "Leave teach mode" : "Leave drill") + '</button>';
   h += '</nav></div>';
   bar.innerHTML = h;
 }
@@ -405,7 +407,7 @@ function renderRecord(){
   h += '<div class="row"><button class="btn" data-act="renameslot" data-slot="' + ST.activeSlot() + '">Rename this career</button>' +
     '<button class="btn" data-act="export" data-slot="' + ST.activeSlot() + '">Export</button>' +
     '<button class="btn" data-act="import">Import</button>' +
-    '<button class="btn" data-act="switch">Switch career</button></div>';
+    '<button class="btn" data-act="menu">Main menu</button></div>';
   h += '<h3 style="margin-top:18px">Slots</h3>' + slotList(ST.listSlots(), 1);
   h += '</div></div>';
   h += '<div class="row end"><button class="btn dngr" data-act="wipe2">Delete this career and start over</button></div>';
@@ -499,6 +501,7 @@ function helpBody(){
     '<h3 style="margin-top:0">Three ways in</h3>' +
     '<p><strong>Teach</strong> is where to start if the vocabulary is new. Thirty five lessons that build the job from nothing: a short card, a worked example with the answer already on it and every discrepancy pointed at, practice with hints, then a check that unlocks the next lesson. It uses the same generators as the game, so what you practice on is what you will be graded on. Course progress is stored separately from your careers.</p>' +
     '<p><strong>Career</strong> is the job with a clock on it. <strong>Drill</strong> is reps with no clock and no consequences.</p>' +
+    '<p>Switch between them any time with <strong>Main menu</strong> in the navigation, or by clicking the Baseline Control logo. Everything is saved on the way out, and career and course progress are kept separately, so nothing is lost by moving between them.</p>' +
     '<h3>The job</h3>' +
     '<p>You control what gets into the product baseline. Packages arrive, you audit them, you classify changes, you answer the customer, and once a week you sit at the change control board. The vault accepts whatever you release and keeps it forever, which is the entire reason this role exists.</p>' +
     '<h3>Career mode</h3>' +
@@ -646,7 +649,7 @@ document.addEventListener("click", function(ev){
     case "mode": U.splash.mode = t.getAttribute("data-mode"); renderSplash(); break;
     case "tbegin": window.BCTEACH.start(false); U.screen = "desk"; render();
       if (!ST.pref.get("helped")){ U.modal = { type:"help" }; ST.pref.set("helped","1"); renderModal(); } break;
-    case "tresume": if (window.BCTEACH.resumeIfAny()){ U.screen = "desk"; render(); } break;
+    case "tresume": if (window.BCTEACH.resumeIfAny()){ ST.setLastMode("teach"); U.screen = "desk"; render(); } break;
     case "pickslot": U.splash.slot = slotN; renderSplash(); break;
     case "newhere": U.splash.slot = slotN; renderSplash();
       try { document.querySelector('[data-act="begin"]').scrollIntoView({ block:"center" }); } catch(x){} break;
@@ -717,10 +720,12 @@ document.addEventListener("click", function(ev){
       else { renderSplash(); toast("Imported, but the slot would not open", "bad"); }
       break;
     }
-    case "switch": {
+    case "menu": case "switch": {
       E.save(); E.unload(); U.modal = null; U.screen = "desk";
-      ST.setLastMode("career");
+      ST.setLastMode("menu");
+      U.splash.slot = 0;
       renderSplash();
+      window.scrollTo(0, 0);
       break;
     }
     case "prog": U.splash.prog = t.getAttribute("data-key"); renderSplash(); break;
@@ -851,6 +856,11 @@ function boot(){
   ST.probeDownloads(function(){ if (U.modal && U.modal.type === "export") renderModal(); });
   var th = ST.pref.get("theme");
   if (th) document.documentElement.setAttribute("data-theme", th);
+  if (ST.lastMode() === "menu"){
+    U.splash.slot = ST.firstFree();
+    renderSplash();
+    return;
+  }
   if (ST.lastMode() === "teach" && ST.teachSummary() && window.BCTEACH && window.BCTEACH.resumeIfAny()){
     U.screen = "desk";
     render();

@@ -175,7 +175,11 @@ table.grid td.m{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabul
 /* ---------- header / title block ---------- */
 .topbar{position:sticky;top:0;z-index:40;background:var(--sheet);border-bottom:1px solid var(--rule-2);box-shadow:0 6px 18px -18px rgba(0,0,0,.9)}
 .topgrid{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
-.brandcell{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 4px;border-right:1px solid var(--rule);min-width:0}
+.brandcell{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 4px;border-right:1px solid var(--rule);min-width:0;
+  background:transparent;border-top:0;border-left:0;border-bottom:0;cursor:pointer;text-align:left;color:inherit;font:inherit;
+  transition:background .12s ease}
+.brandcell:hover{background:var(--panel-2)}
+.brandcell .nm,.brandcell .sub{display:block}
 .mark{width:26px;height:26px;flex:0 0 auto}
 .brandcell .nm{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:17px;letter-spacing:.13em;text-transform:uppercase;line-height:1}
 .brandcell .sub{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}

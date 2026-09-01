@@ -8,7 +8,7 @@
 "use strict";
 var B = window.BC;
 
-var APP = "1.2.0";
+var APP = "1.2.1";
 var FORMAT = 2;            // bump only when the shape of a saved state changes
 var SLOTS = 5;
 var K = {
