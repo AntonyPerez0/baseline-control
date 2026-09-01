@@ -181,6 +181,15 @@ function grade(item, resp){
   return { score:0, lines:[], escape:null, summary:"" };
 }
 
+/* Grade without consequences. Teach mode uses this so a wrong answer in a
+   lesson teaches instead of costing you a meter. */
+function gradeOnly(item, resp){
+  if (!item || item.done) return item ? item.result : null;
+  var res = grade(item, resp);
+  item.done = true; item.result = res; item.resp = resp;
+  return res;
+}
+
 function submit(itemId, resp){
   var item = findItem(itemId);
   if (!item || item.done) return null;
@@ -373,6 +382,7 @@ function fillDrill(){
 /* ---------------- persistence ---------------- */
 function save(){
   if (!S) return false;
+  if (S.mode === "teach") return true;   // teach progress is saved by the teach module
   return ST().write(ST().activeSlot(), S);
 }
 function load(slot){
@@ -411,7 +421,7 @@ function state(){ return S; }
 window.BCE = {
   KIND:KIND, BADGES:BADGES, HOURS_PER_DAY:HOURS_PER_DAY,
   start:start, resume:resume, unload:unload, state:state, load:load, save:save, wipe:wipe,
-  submit:submit, endDay:endDay, findItem:findItem, makeItem:makeItem,
+  submit:submit, gradeOnly:gradeOnly, endDay:endDay, findItem:findItem, makeItem:makeItem,
   prepBoard:prepBoard, takeBoard:takeBoard, fillDrill:fillDrill, spawnDay:spawnDay
 };
 })();

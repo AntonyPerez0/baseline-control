@@ -8,13 +8,15 @@
 "use strict";
 var B = window.BC;
 
-var APP = "1.1.0";
+var APP = "1.2.0";
 var FORMAT = 2;            // bump only when the shape of a saved state changes
 var SLOTS = 5;
 var K = {
   slot: function(n){ return "bc.v2.slot" + n; },
   active: "bc.v2.active",
   form: "bc.v2.form",
+  teach: "bc.v2.teach",
+  last: "bc.v2.last",
   theme: "bc.theme",
   helped: "bc.helped"
 };
@@ -258,6 +260,36 @@ function adoptLegacy(){
   del(LEGACY_SAVE);
 }
 
+/* ---------- teach mode progress ----------
+   Kept out of the career slots on purpose: what you have learned should not
+   disappear because you started a new career.                              */
+function teachRead(){
+  var raw = get(K.teach);
+  if (!raw) return null;
+  try {
+    var o = JSON.parse(raw);
+    if (!o || (o.v || 1) > 1) return null;
+    return o;
+  } catch(e){ return null; }
+}
+function teachWrite(t){
+  if (!t) return false;
+  t.v = 1; t.updated = Date.now();
+  var okw = set(K.teach, JSON.stringify(t));
+  if (okw) _lastSaved = t.updated;
+  return okw;
+}
+function teachClear(){ del(K.teach); }
+function teachSummary(){
+  var t = teachRead();
+  if (!t) return null;
+  var n = 0;
+  for (var k in (t.done || {})) n++;
+  return { lessons:n, lesson:t.lesson, updated:t.updated || 0 };
+}
+function lastMode(){ return get(K.last) || "career"; }
+function setLastMode(m){ set(K.last, m); }
+
 var _lastSaved = 0;
 function lastSaved(){ return _lastSaved; }
 function sinceText(){
@@ -279,6 +311,8 @@ window.BCS = {
   exportText:exportText, exportName:exportName, importText:importText,
   canDownload:canDownload, saveFile:saveFile, probeDownloads:probeDownloads, topLevel:topLevel,
   adoptLegacy:adoptLegacy, migrate:migrate,
+  teachRead:teachRead, teachWrite:teachWrite, teachClear:teachClear, teachSummary:teachSummary,
+  lastMode:lastMode, setLastMode:setLastMode,
   lastSaved:lastSaved, sinceText:sinceText,
   pref: {
     get: function(k){ return get(K[k] || k); },

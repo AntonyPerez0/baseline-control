@@ -1,6 +1,6 @@
 {
   "name": "baseline-control",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "A configuration and data management simulator for defense and aerospace change control.",
   "license": "MIT",

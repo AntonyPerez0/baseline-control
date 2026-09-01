@@ -1,7 +1,7 @@
 /* Baseline Control service worker.
    Stale while revalidate for same origin GETs: the page opens instantly from
    cache and quietly updates itself, so a deploy reaches you on the next load. */
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const CACHE = "baseline-control-" + VERSION;
 const SHELL = [
   "./",
@@ -17,9 +17,11 @@ const SHELL = [
   "src/09-tasks-c.js",
   "src/10-codex.js",
   "src/11-store.js",
+  "src/16-teach.js",
   "src/12-engine.js",
   "src/13-ui-items.js",
   "src/14-ui-core.js",
+  "src/17-teach-ui.js",
   "src/15-boot-sw.js",
   "icons/icon.svg",
   "icons/icon-192.png",

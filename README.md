@@ -67,6 +67,34 @@ lookup table.
 | Baseline gates | Which baseline is set where, and who controls it |
 | Situations and escapes | Judgement calls, and the ones you got wrong coming back later |
 
+## Teach mode
+
+Start here if the vocabulary is new. Thirty five lessons in ten modules take the job
+from nothing to the senior end of the ladder: identification and baselines, change
+control and classification, interchangeability, variances, status accounting, the
+board, data management, audits, and the E4 and E5 material on CM plans, tailoring,
+digital thread and governance.
+
+Every lesson runs the same four beats.
+
+1. **A card.** About a hundred words. Enough to set up what you are about to look at.
+2. **A worked example.** A real generated scenario with the answer already on it and
+   every discrepancy annotated: which field it lives in, what is wrong with it, and why
+   it matters.
+3. **Practice.** Generated scenarios you answer yourself, with two levels of hint that
+   tell you where to look without telling you the answer.
+4. **A check.** Graded, no hints, and it gates the next lesson. Falling short offers
+   more practice rather than blocking you.
+
+The lessons run on the same generators as the rest of the game, so the thing you
+practice on is the thing you are later graded on. Course progress lives in its own
+storage, separate from the career slots, so starting or deleting a career never costs
+you a lesson.
+
+![A worked example, with each discrepancy pointed at](docs/screenshot-teach.png)
+
+## Career and drill
+
 Career mode runs a four by ten week, Monday through Thursday, ten hours a day. Four
 meters track baseline integrity, schedule health, customer confidence and audit
 readiness. Experience accumulates until a panel convenes and asks four questions.
@@ -77,7 +105,7 @@ Drill mode has no clock and no consequences. Pick a tier, narrow to one kind of 
 if you like, and answer until you stop.
 
 An in-app codex covers the standards and the vocabulary, and opens mid task. Using it
-is not cheating.
+is not cheating, and if you have worked through teach mode you should not need it.
 
 ---
 
@@ -142,10 +170,12 @@ src/07-tasks-a.js          classification, interchangeability, variance, CDRL
 src/08-tasks-b.js          status accounting, audits, baseline gates, minutes
 src/09-tasks-c.js          the board, situations, staff decisions
 src/10-codex.js            the reference and the promotion question banks
-src/11-store.js            slots, migration, export and import
+src/11-store.js            slots, migration, export and import, course progress
+src/16-teach.js            the curriculum: thirty five lessons in ten modules
 src/12-engine.js           the working day, meters, escapes, promotions
 src/13-ui-items.js         one renderer per task type
 src/14-ui-core.js          shell, navigation, modals, interaction
+src/17-teach-ui.js         the lesson runner, hints, syllabus
 src/15-boot-sw.js          service worker registration, http only
 sw.js                      offline cache, stale while revalidate
 tools/build.mjs            bundles and site assembly
@@ -165,7 +195,7 @@ thing trivially concatenable into a single file.
 npm test
 ```
 
-Eighty checks in four suites:
+A hundred and nineteen checks in five suites:
 
 - **grading** generates roughly fourteen thousand scenarios across every task type and
   every tier, answers each one from its own key, and requires a perfect score every
@@ -181,6 +211,11 @@ Eighty checks in four suites:
 - **persistence** covers reload survival, slot isolation, migration of an old single
   slot save, export and import round trips, refusal of garbage and of newer formats,
   restoring a half finished answer, and running at all when storage is blocked.
+- **teach mode** checks the curriculum is well formed, that every worked example
+  actually finds the scenario its lesson describes, that a correct learner can complete
+  all thirty five lessons, that lessons unlock in order and cannot be skipped, that a
+  failed check does not pass and offers a way back, and that course progress survives a
+  reload and is untouched by starting or deleting a career.
 
 ---
 

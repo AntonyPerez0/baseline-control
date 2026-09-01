@@ -41,7 +41,16 @@ function renderTop(){
   var h = '<div class="wrap"><div class="topgrid">';
   h += '<div class="brandcell">' + mark() + '<div><div class="nm">Baseline Control</div>' +
        '<div class="sub">' + e(S.world.prog.name) + ' &middot; ' + e(L.code) + " " + e(L.title) + '</div></div></div>';
-  if (S.mode === "career"){
+  if (S.mode === "teach"){
+    var ts = window.BCTEACH ? window.BCTEACH.topStats() : { pct:0, done:0, total:0, lesson:"", title:"", module:"" };
+    h += '<div class="metercell">' +
+      '<div class="meter" style="flex:2 1 200px"><div class="mk">' + e(ts.module) + '</div>' +
+      '<div class="mv" style="font-family:\'Saira Condensed\',sans-serif;font-size:15px">' + e(ts.lesson + "  " + ts.title) + '</div></div>' +
+      '<div class="meter"><div class="mk">Course</div><div class="mv">' + ts.done + '/' + ts.total + '</div>' +
+      '<div class="bar ' + (ts.pct>=66?"ok":ts.pct>=33?"warn":"") + '"><i style="width:' + ts.pct + '%"></i></div></div>' +
+      '</div>';
+    h += '<div class="clockcell"><div><div class="lbl">Mode</div><div class="big">Teach</div></div></div>';
+  } else if (S.mode === "career"){
     h += '<div class="metercell">' +
       meter("integrity","Baseline", S.meters.integrity) +
       meter("schedule","Schedule", S.meters.schedule) +
@@ -63,15 +72,16 @@ function renderTop(){
   h += '</div>';
   var open = S.queue.filter(function(x){ return !x.done; }).length;
   h += '<nav class="nav">';
-  h += navbtn("desk", S.mode === "career" ? "Desk" : "Drill", open);
-  h += navbtn("record", "Record", 0);
+  h += navbtn("desk", S.mode === "career" ? "Desk" : (S.mode === "teach" ? "Lesson" : "Drill"), S.mode === "teach" ? 0 : open);
+  if (S.mode === "teach") h += navbtn("syllabus", "Syllabus", 0);
+  else h += navbtn("record", "Record", 0);
   h += navbtn("codex", "Codex", 0);
   h += '<button data-act="help">How this works</button>';
   h += '<button data-act="theme" title="Switch between the vellum and blueprint themes">Theme</button>';
   h += '<span class="savetag" title="Progress is written to this browser after every item">' +
        (ST.available() ? e(ST.sinceText() || "autosave on") : "not saving") + '</span>';
   if (S.mode === "career") h += '<button data-act="endday" style="margin-left:auto;color:var(--stamp)">End the day</button>';
-  else h += '<button data-act="switch" style="margin-left:auto">Switch save</button>';
+  else h += '<button data-act="switch" style="margin-left:auto">' + (S.mode === "teach" ? "Leave teach mode" : "Switch save") + '</button>';
   h += '</nav></div>';
   bar.innerHTML = h;
 }
@@ -96,6 +106,12 @@ function renderSplash(){
     h += '<div class="sheet" style="margin-top:14px"><div class="pad"><div class="critbox">' +
       e(ST.reason()) + ' You can still play, and you can copy your save out from the Record screen before you close the tab.</div></div></div>';
   }
+  var tsum = ST.teachSummary();
+  if (tsum){
+    h += '<div class="sheet" style="margin-top:14px"><div class="tb"><h2>Course in progress</h2>' +
+      '<span class="chip ok">' + tsum.lessons + ' of ' + (window.BCTEACHC ? window.BCTEACHC.LESSONS.length : 35) + ' lessons</span>' +
+      '<button class="btn sm pri" data-act="tresume" style="margin-left:auto">Continue learning</button></div></div>';
+  }
   var slots = ST.listSlots(), anySaved = slots.some(function(x){ return !x.empty; });
   if (anySaved){
     h += '<div class="sheet" style="margin-top:14px"><div class="tb"><h2>Saved careers</h2>' +
@@ -106,10 +122,19 @@ function renderSplash(){
 
   h += '<div class="sheet" style="margin-top:14px"><div class="tb"><h2>Start</h2></div><div class="pad">';
   h += '<div class="lbl">Mode</div><div class="tiers" style="margin:7px 0 16px">';
+  h += tier("teach", "Teach", "Start here", "Thirty five lessons that build the whole job from nothing. A card, a worked example with the answer on it, practice with hints, then a check.", U.splash.mode==="teach");
   h += tier("career", "Career", "E1 to E5", "Ten hour days on a four by ten week. Meters, promotions, and mistakes that come back.", U.splash.mode==="career");
   h += tier("drill", "Drill", "Any tier", "No clock, no consequences. Endless scenarios at the tier you pick, graded instantly.", U.splash.mode==="drill");
   h += '</div>';
 
+  if (U.splash.mode === "teach"){
+    h += '<div class="infobox" style="margin:6px 0 14px">Teach mode keeps its own progress, separate from your career slots, so nothing you learn is lost by starting a new career.</div>';
+    h += '<div class="row end" style="margin-top:14px"><button class="btn" data-act="help">How this works</button>' +
+         '<button class="btn pri" data-act="tbegin">Start the course</button></div></div></div>';
+    h += '<p class="mut" style="font-size:12.5px;margin:16px 2px 0;max-width:70ch">Meridian Aerospace Systems and every program, person and supplier in this simulator are fictional. The standards and the vocabulary are real.</p></div>';
+    B.el("view").innerHTML = h;
+    return;
+  }
   h += '<div class="lbl">Program</div><div class="tiers" style="margin:7px 0 16px">';
   for (var i=0;i<B.PROGRAMS.length;i++){
     var p = B.PROGRAMS[i];
@@ -471,7 +496,10 @@ function renderModal(){
 }
 function helpBody(){
   return '<div class="doc">' +
-    '<h3 style="margin-top:0">The job</h3>' +
+    '<h3 style="margin-top:0">Three ways in</h3>' +
+    '<p><strong>Teach</strong> is where to start if the vocabulary is new. Thirty five lessons that build the job from nothing: a short card, a worked example with the answer already on it and every discrepancy pointed at, practice with hints, then a check that unlocks the next lesson. It uses the same generators as the game, so what you practice on is what you will be graded on. Course progress is stored separately from your careers.</p>' +
+    '<p><strong>Career</strong> is the job with a clock on it. <strong>Drill</strong> is reps with no clock and no consequences.</p>' +
+    '<h3>The job</h3>' +
     '<p>You control what gets into the product baseline. Packages arrive, you audit them, you classify changes, you answer the customer, and once a week you sit at the change control board. The vault accepts whatever you release and keeps it forever, which is the entire reason this role exists.</p>' +
     '<h3>Career mode</h3>' +
     '<p>Four ten hour days a week, Monday through Thursday. Each item costs hours. Run out and you go into overtime, which costs you. Anything still open at the end of the day costs schedule, and a late data deliverable costs customer confidence too.</p>' +
@@ -483,7 +511,7 @@ function helpBody(){
     '<h3>Drill mode</h3>' +
     '<p>No clock, no meters, no consequences. Pick a tier, optionally narrow to one kind of task, and answer until you stop. Everything is generated, so it does not repeat.</p>' +
     '<h3>The codex</h3>' +
-    '<p>Open it any time, including in the middle of an item. It is a reference, not a test bank, and using it is not cheating. The whole point is to learn the rules well enough to stop needing it.</p>' +
+    '<p>Open it any time, including in the middle of an item. It is a reference, not a test bank, and using it is not cheating. If you work through teach mode you should not need it, which is the point of teach mode.</p>' +
     '<div class="row end" style="margin-top:14px"><button class="btn pri" data-act="closemodal">Understood</button></div></div>';
 }
 function aarBody(s){
@@ -558,7 +586,9 @@ function render(){
   if (!S || !S.started){ renderSplash(); renderModal(); return; }
   renderTop();
   var v = B.el("view"), h = "";
-  if (U.screen === "desk"){
+  if (S.mode === "teach" && window.BCTEACH){
+    h = window.BCTEACH.render();
+  } else if (U.screen === "desk"){
     h = alarmBanner() + '<div class="cols">' + renderRail() + '<div>' + renderWork() + '</div></div>';
   } else if (U.screen === "record"){ h = renderRecord(); }
   else if (U.screen === "codex"){ h = renderCodex(); }
@@ -571,7 +601,7 @@ function render(){
 var _formTimer = null;
 function touchForm(){
   var S = E.state();
-  if (!S || !S.activeId) return;
+  if (!S || !S.activeId || S.mode === "teach") return;
   var f = II.form();
   if (_formTimer) clearTimeout(_formTimer);
   _formTimer = setTimeout(function(){ ST.formSave(S.activeId, f); }, 350);
@@ -610,8 +640,13 @@ document.addEventListener("click", function(ev){
 
   var slotN = t.getAttribute("data-slot") ? parseInt(t.getAttribute("data-slot"), 10) : 0;
 
+  if (act.charAt(0) === "t" && window.BCTEACH && window.BCTEACH.act(act, t)) return;
+
   switch(act){
     case "mode": U.splash.mode = t.getAttribute("data-mode"); renderSplash(); break;
+    case "tbegin": window.BCTEACH.start(false); U.screen = "desk"; render();
+      if (!ST.pref.get("helped")){ U.modal = { type:"help" }; ST.pref.set("helped","1"); renderModal(); } break;
+    case "tresume": if (window.BCTEACH.resumeIfAny()){ U.screen = "desk"; render(); } break;
     case "pickslot": U.splash.slot = slotN; renderSplash(); break;
     case "newhere": U.splash.slot = slotN; renderSplash();
       try { document.querySelector('[data-act="begin"]').scrollIntoView({ block:"center" }); } catch(x){} break;
@@ -684,6 +719,7 @@ document.addEventListener("click", function(ev){
     }
     case "switch": {
       E.save(); E.unload(); U.modal = null; U.screen = "desk";
+      ST.setLastMode("career");
       renderSplash();
       break;
     }
@@ -698,6 +734,7 @@ document.addEventListener("click", function(ev){
       if (!sm2.empty && !confirm("Slot " + slot + " holds " + (sm2.name || "a career") + ". Overwrite it?")) break;
       var pn = null;
       for (var pi=0; pi<B.PROGRAMS.length; pi++) if (B.PROGRAMS[pi].key === U.splash.prog) pn = B.PROGRAMS[pi].name;
+      ST.setLastMode("career");
       E.start({ mode:U.splash.mode, progKey:U.splash.prog, slot:slot,
         name: (pn || "Career") + (U.splash.mode === "drill" ? " drill" : ""),
         level: U.splash.mode === "drill" ? U.splash.level : 1,
@@ -757,6 +794,7 @@ document.addEventListener("click", function(ev){
     case "ans": { var f4 = II.form(); f4.answers[parseInt(t.getAttribute("data-q"),10)] = parseInt(t.getAttribute("data-idx"),10); touchForm(); render(); break; }
     case "disp": { var f5 = II.form(); f5.dispositions[parseInt(t.getAttribute("data-idx"),10)] = t.getAttribute("data-val"); touchForm(); render(); break; }
     case "submit": {
+      if (S.mode === "teach"){ window.BCTEACH.act("tsubmit", t); break; }
       var it2 = E.findItem(S.activeId);
       if (!it2 || it2.done) break;
       var resp = II.collect(it2);
@@ -813,6 +851,11 @@ function boot(){
   ST.probeDownloads(function(){ if (U.modal && U.modal.type === "export") renderModal(); });
   var th = ST.pref.get("theme");
   if (th) document.documentElement.setAttribute("data-theme", th);
+  if (ST.lastMode() === "teach" && ST.teachSummary() && window.BCTEACH && window.BCTEACH.resumeIfAny()){
+    U.screen = "desk";
+    render();
+    return;
+  }
   var slot = ST.activeSlot();
   var saved = E.load(slot);
   if (saved && saved.started){

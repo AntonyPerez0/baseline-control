@@ -38,7 +38,7 @@ function run(reps = 220) {
   const t = suite("grading");
 
   let oracleMiss = 0, notObservable = 0, notOffered = 0, distractorTrue = 0;
-  let renderFail = 0, freshRenderFail = 0, generated = 0;
+  let renderFail = 0, freshRenderFail = 0, generated = 0, evidenceMissing = 0;
   const wrongScores = [];
 
   for (let lv = 1; lv <= 5; lv++) {
@@ -66,6 +66,20 @@ function run(reps = 220) {
           II.resetForm(it);
           const fresh = II.render(it, false);
           if (typeof fresh !== "string" || fresh.length < 40 || fresh.indexOf("undefined") >= 0) freshRenderFail++;
+          if (k === "release") {
+            /* the evidence a discrepancy is judged against has to be on screen */
+            const p = it.data.pkg;
+            const needs = [
+              p.ctx.activityCage,                                  // cage-wrong
+              p.ctx.pnOfRecord,                                    // pn-interch
+              String(p.sheets), String(p.sheetsShown),             // sheet-count
+              p.curRev, p.propRev,                                 // rev-skip, rev-forbidden
+              B.dateOf(p.crDay)                                    // sig-date
+            ];
+            if (p.ctx.acceptedThrough) needs.push(B.serial(p.ctx.acceptedThrough));   // eff-delivered
+            for (const r of p.related) if (r.current != null) needs.push(r.current);  // superseded-ref
+            for (const n2 of needs) if (fresh.indexOf(String(n2)) < 0) evidenceMissing++;
+          }
         } catch { freshRenderFail++; }
 
         const res = E.submit(it.id, answerFromKey(W, it));
@@ -102,6 +116,7 @@ function run(reps = 220) {
   t.eq("no distractor is actually true", distractorTrue, 0);
   t.eq("graded state renders for every kind", renderFail, 0);
   t.eq("fresh form renders for every kind", freshRenderFail, 0);
+  t.eq("the evidence behind every discrepancy is on screen", evidenceMissing, 0);
   t.ok(`a wrong answer scores badly (mean ${meanWrong.toFixed(2)})`, meanWrong < 0.3, `mean ${meanWrong.toFixed(2)} is too generous`);
   return t.done();
 }

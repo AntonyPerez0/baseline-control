@@ -162,25 +162,25 @@ function gradeVariance(task, resp){
 
 /* ---------------- CDRL and SDRL deliverables ---------------- */
 var CDRL_DEF = {
-  "did-wrong": { sev:"stop", label:"Cited data item description does not match the content of the deliverable",
+  "did-wrong": { area:"did", where:"Required DID against the DID cited in the document", sev:"stop", label:"Cited data item description does not match the content of the deliverable",
     w:"The DID is the specification for the document. Cite the wrong one and the customer gets to reject on format alone." },
-  "no-dist": { sev:"stop", label:"Distribution statement is missing from the cover and the header",
+  "no-dist": { area:"markings", where:"Distribution statement", sev:"stop", label:"Distribution statement is missing from the cover and the header",
     w:"Every controlled technical document carries a distribution statement. Without one it cannot be released, and if it leaves the building anyway you have an incident." },
-  "no-class": { sev:"stop", label:"Classified deliverable is missing portion markings",
+  "no-class": { area:"markings", where:"Classification and portion markings", sev:"stop", label:"Classified deliverable is missing portion markings",
     w:"Overall marking is not enough. Each portion carries its own marking so a reader knows what they can extract." },
-  "late": { sev:"stop", label:"Submittal will miss the contract due date",
+  "late": { area:"schedule", where:"Contract due date against planned submittal", sev:"stop", label:"Submittal will miss the contract due date",
     w:"A late deliverable shows up on the customer delinquency report, and it is one of the very few CM numbers a program manager watches weekly." },
-  "no-review": { sev:"comment", label:"Submittal leaves the government less than the contractually required review period",
+  "no-review": { area:"schedule", where:"Planned submittal against the milestone it supports, and the required review period", sev:"comment", label:"Submittal leaves the government less than the contractually required review period",
     w:"An approval deliverable needs the full review window before the milestone it supports. Submitting on the last legal day is technically on time and practically useless." },
-  "unsigned": { sev:"stop", label:"Not signed by an authorized representative",
+  "unsigned": { area:"form", where:"Signature", sev:"stop", label:"Not signed by an authorized representative",
     w:"An unsigned deliverable is a draft. Drafts do not satisfy a contract line item." },
-  "wrong-medium": { sev:"comment", label:"Submitted in a medium or format the CDRL does not allow",
+  "wrong-medium": { area:"form", where:"Submittal medium against what the CDRL allows", sev:"comment", label:"Submitted in a medium or format the CDRL does not allow",
     w:"Block 8 through 12 of the CDRL say what form it takes and where it goes. Contractor format is often allowed. Read it before you convert anything." },
-  "wrong-addr": { sev:"comment", label:"Distribution list does not match the CDRL addressees",
+  "wrong-addr": { area:"form", where:"Addressees", sev:"comment", label:"Distribution list does not match the CDRL addressees",
     w:"The wrong addressee means the right person never sees it, and the clock keeps running." },
-  "no-comments": { sev:"stop", label:"Resubmittal does not disposition the government comments from the prior submittal",
+  "no-comments": { area:"resubmittal", where:"Resubmittal and comments dispositioned", sev:"stop", label:"Resubmittal does not disposition the government comments from the prior submittal",
     w:"A resubmittal that ignores comments will be rejected, and the second rejection is the one that ends up in a briefing chart." },
-  "no-cdrl-block": { sev:"comment", label:"Document does not cite the CDRL sequence number and contract number",
+  "no-cdrl-block": { area:"form", where:"Cites CDRL and contract number", sev:"comment", label:"Document does not cite the CDRL sequence number and contract number",
     w:"Without them the receiving office cannot match your document to the line item it satisfies." }
 };
 var CDRL_ACT = [

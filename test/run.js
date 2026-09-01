@@ -5,7 +5,8 @@ const suites = [
   require("./grading.js"),
   require("./dates.js"),
   require("./career.js"),
-  require("./store.js")
+  require("./store.js"),
+  require("./teach.js")
 ];
 
 const quick = process.argv.includes("--quick");

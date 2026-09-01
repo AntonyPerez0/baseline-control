@@ -9,67 +9,67 @@
 var B = window.BC, C = window.BCC;
 
 var DEFECTS = {
-  "rev-skip": { sev:"stop",
+  "rev-skip": { area:"title", where:"Title block: current revision against proposed revision", sev:"stop",
     label:"Proposed revision letter is out of sequence",
     why:"Revisions advance one letter at a time. A jump means either a revision was released and never recorded, or the drafter guessed." },
-  "rev-forbidden": { sev:"stop",
+  "rev-forbidden": { area:"title", where:"Title block: proposed revision", sev:"stop",
     label:"Proposed revision letter uses a character not permitted for revisions",
     why:"I, O, Q, S, X and Z are not used as revision letters because they read as numerals or as each other on a print." },
-  "sig-missing": { sev:"stop",
+  "sig-missing": { area:"approvals", where:"Approvals: a block with no name in it", sev:"stop",
     label:"A required approval block is unsigned",
     why:"A package is not releasable until every discipline the change touches has signed. The vault will take it anyway, which is exactly why you check." },
-  "sig-date": { sev:"stop",
+  "sig-date": { area:"approvals", where:"Approvals: each signature date against the change request date in change control data", sev:"stop",
     label:"An approval is dated before the change request itself",
     why:"Someone signed a change that did not exist yet. Either the date is wrong or the signature was carried over from an earlier package." },
-  "sig-indep": { sev:"stop",
+  "sig-indep": { area:"approvals", where:"Approvals: the design engineering name against the checker name", sev:"stop",
     label:"The same person signed as both preparer and checker",
     why:"The check is an independent review. One person cannot be their own independent reviewer." },
-  "eff-inverted": { sev:"stop",
+  "eff-inverted": { area:"effectivity", where:"Change control data: effectivity", sev:"stop",
     label:"Effectivity range is inverted or impossible",
     why:"An effectivity that starts after it ends cannot be worked on the floor and will not load into status accounting." },
-  "eff-delivered": { sev:"stop",
+  "eff-delivered": { area:"effectivity", where:"Change control data: effectivity, against the delivered units in program context", sev:"stop",
     label:"Effectivity reaches units already delivered and accepted, with no retrofit direction",
     why:"You cannot quietly change the configuration of hardware the customer already owns. Either the effectivity starts later or the package carries retrofit instructions." },
-  "class-under": { sev:"stop",
+  "class-under": { area:"classification", where:"Change control data: classification, against the impact worksheet", sev:"stop",
     label:"Classified Class II although the impact worksheet shows a Class I trigger",
     why:"Under classifying is the most expensive mistake in this job. It puts an unapproved change into the product baseline." },
-  "class-over": { sev:"comment",
+  "class-over": { area:"classification", where:"Change control data: classification, against the impact worksheet", sev:"comment",
     label:"Classified Class I although no Class I trigger is present",
     why:"Over classifying is not dangerous, it is just slow and costly. It sends the government a proposal they did not need to see." },
-  "class-nogov": { sev:"stop",
+  "class-nogov": { area:"classification", where:"Change control data: classification, ECP number and government approval", sev:"stop",
     label:"Class I package with no government approval reference",
     why:"A Class I change is not authorized until the contracting officer approves it. No approval reference, no release." },
-  "reason-mismatch": { sev:"comment",
+  "reason-mismatch": { area:"change", where:"Change control data: reason code, against the description of change", sev:"comment",
     label:"Reason code does not match the description of the change",
     why:"Reason codes drive metrics, cost recovery and trend analysis. A wrong code quietly poisons the data." },
-  "pl-mismatch": { sev:"stop",
+  "pl-mismatch": { area:"title", where:"Title block: the two part number fields", sev:"stop",
     label:"Part number in the title block does not match the parts list callout",
     why:"Two different numbers for the same item means the floor will build one and the vault will record the other." },
-  "cage-wrong": { sev:"comment",
+  "cage-wrong": { area:"title", where:"Title block: CAGE, against the design activity in program context", sev:"comment",
     label:"CAGE code shown is not the design activity for this drawing",
     why:"The CAGE identifies who owns the design. A supplier CAGE on a contractor drawing misroutes every future revision." },
-  "icd-missing": { sev:"stop",
+  "icd-missing": { area:"related", where:"Related documents, against the interface row of the impact worksheet", sev:"stop",
     label:"Change affects an interface but no interface control document is listed",
     why:"If the interface moves and the ICD does not, the other side of the interface is building to a document that is now wrong." },
-  "sheet-count": { sev:"comment",
+  "sheet-count": { area:"title", where:"Title block: sheets in title block against sheets in package", sev:"comment",
     label:"Sheet count in the title block does not match the sheets in the package",
     why:"A missing sheet is a missing requirement. This is the single easiest discrepancy to find and the one most often waved through." },
-  "superseded-ref": { sev:"comment",
+  "superseded-ref": { area:"related", where:"Related documents: the cited revision against the released revision", sev:"comment",
     label:"Package references a superseded revision of a specification",
     why:"Citing a dead revision means the item is being built to requirements that were changed for a reason." },
-  "cdrl-missing": { sev:"comment",
+  "cdrl-missing": { area:"change", where:"Change control data: contract deliverable and CDRL sequence", sev:"comment",
     label:"Document is a contract deliverable but no CDRL sequence number is cited",
     why:"If it is not tied to a CDRL line item it will not be scheduled, will not be submitted, and will show up on the customer delinquency report." },
-  "baseline-missing": { sev:"comment",
+  "baseline-missing": { area:"change", where:"Change control data: baseline affected", sev:"comment",
     label:"No baseline is identified for the affected item",
     why:"Change control only means something relative to a baseline. Without one you are editing a document, not controlling a configuration." },
-  "pn-interch": { sev:"stop",
+  "pn-interch": { area:"title", where:"Title block: part number, against the part number of record in program context and the interchangeability row of the impact worksheet", sev:"stop",
     label:"Item is no longer interchangeable but the part number is unchanged",
     why:"A part that will not swap with its predecessor must get a new number. Keeping the old one guarantees the wrong part gets installed later." },
-  "sw-nolabel": { sev:"stop",
+  "sw-nolabel": { area:"change", where:"Change control data: software build label, and related documents", sev:"stop",
     label:"Software change with no build label or version description reference",
     why:"A software configuration item is identified by its build. Without a label there is nothing to audit and nothing to reproduce." },
-  "no-effectivity": { sev:"stop",
+  "no-effectivity": { area:"effectivity", where:"Change control data: effectivity", sev:"stop",
     label:"Effectivity field is blank on a hardware change",
     why:"Effectivity is the answer to which units get this. Blank means manufacturing decides, and manufacturing should never be the one deciding." }
 };
@@ -161,20 +161,45 @@ function genRelease(rng, world, day, level){
     pkg.partsListPN = newPn;
   }
 
-  // related documents
+  // related documents. Every row carries the revision the vault currently holds,
+  // because that is the comparison the analyst actually makes.
   pkg.specRevReleased = B.revAt(rng.int(1,5));
-  pkg.related.push({ type:"Item specification", id: ci.spec, rev: pkg.specRevReleased });
-  pkg.related.push({ type:"Parts list", id:"PL" + ci.doc, rev: pkg.propRev });
-  if (ch.affectsIface) pkg.related.push({ type:"Interface control document", id:"ICD-" + world.prog.key + "-" + rng.int(100,899), rev: B.revAt(rng.int(1,4)) });
-  if (ch.isSw) pkg.related.push({ type:"Software version description", id:"VDD-" + ci.abbr + "-" + rng.int(20,99), rev: B.revAt(rng.int(0,3)) });
-  if (ch.affectsSafety) pkg.related.push({ type:"Hazard report", id:"HR-" + world.prog.key + "-" + rng.int(10,99), rev:"closed" });
+  function rel(type, id, rev){ pkg.related.push({ type:type, id:id, rev:rev, current:rev }); }
+  rel("Item specification", ci.spec, pkg.specRevReleased);
+  rel("Parts list", "PL" + ci.doc, pkg.propRev);
+  if (ch.affectsIface) rel("Interface control document", "ICD-" + world.prog.key + "-" + rng.int(100,899), B.revAt(rng.int(1,4)));
+  if (ch.isSw) rel("Software version description", "VDD-" + ci.abbr + "-" + rng.int(20,99), B.revAt(rng.int(0,3)));
+  if (ch.affectsSafety) rel("Hazard report", "HR-" + world.prog.key + "-" + rng.int(10,99), "closed");
+
+  // program context: what the analyst has open in the other window
+  var accepted = 0, inWork = 0;
+  for (var uu=0; uu<world.units.length; uu++){ if (world.units[uu].accepted) accepted = world.units[uu].sn; }
+  inWork = world.units.length;
+  pkg.ctx = {
+    activity: "Meridian Aerospace Systems",
+    activityCage: "8L4C7",
+    pnOfRecord: ci.pn,
+    revOfRecord: ci.rev,
+    acceptedThrough: accepted,
+    lastUnit: inWork,
+    baselineOfRecord: ci.baseline,
+    specReleased: pkg.specRevReleased
+  };
 
   // signatures, clean by construction
   var roles = requiredRoles(ch);
   var preparer = B.personName(rng);
   var sigSpan = Math.max(1, Math.min(10, day - pkg.crDay));
+  var usedNames = { };
+  usedNames[preparer] = 1;
   for (var i=0;i<roles.length;i++){
-    var nm = roles[i] === "Design Engineering" ? preparer : B.personName(rng);
+    var nm = preparer;
+    if (roles[i] !== "Design Engineering"){
+      var guardN = 0;
+      do { nm = B.personName(rng); } while (usedNames[nm] && guardN++ < 30);
+      if (usedNames[nm]) nm = nm + " II";
+      usedNames[nm] = 1;
+    }
     pkg.sigs.push({ role: roles[i], name: nm, day: pkg.crDay + rng.int(1, sigSpan), signed: true });
   }
 
@@ -273,7 +298,7 @@ function apply(id, p, rng, world){
     case "superseded-ref": {
       for (var j=0;j<p.related.length;j++) if (p.related[j].type === "Item specification"){
         p.related[j].rev = B.revAt(Math.max(0, B.revIndex(p.specRevReleased) - rng.int(1,2)));
-        p.related[j].note = "released revision is " + p.specRevReleased;
+        p.related[j].current = p.specRevReleased;
       } break;
     }
     case "cdrl-missing": p.cdrl = null; break;
@@ -282,6 +307,7 @@ function apply(id, p, rng, world){
       var wasSame = (p.partsListPN === p.titleBlockPN);
       p.titleBlockPN = p.change.ci.pn;
       if (wasSame) p.partsListPN = p.change.ci.pn;
+      else if (p.partsListPN === p.titleBlockPN) p.partsListPN = p.change.ci.doc + "-999";
       p.newPN = false; break;
     }
     case "sw-nolabel": p.swBuild = null; if (p.effType === "build") p.effText = "All builds"; 

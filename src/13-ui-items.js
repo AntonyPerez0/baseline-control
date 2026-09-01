@@ -96,6 +96,15 @@ function renderRelease(item, done){
     ["Part number, title block", p.titleBlockPN], ["Part number, parts list", p.partsListPN],
     ["Title", p.title]
   ]);
+  h += sect("Program context");
+  h += '<p class="mut" style="font-size:13px;margin-bottom:8px">What the vault and the unit register say right now. The package has to agree with this.</p>';
+  h += fields([
+    ["Design activity", p.ctx.activity + ", CAGE " + p.ctx.activityCage],
+    ["Part number of record", p.ctx.pnOfRecord + " at revision " + p.ctx.revOfRecord],
+    ["Baseline of record", p.ctx.baselineOfRecord],
+    ["Delivered and accepted", p.ctx.acceptedThrough ? ("S/N 0001 through " + B.serial(p.ctx.acceptedThrough)) : "None yet"],
+    ["Units on contract", B.serial(1) + " through " + B.serial(p.ctx.lastUnit)]
+  ]);
   h += sect("Change control data");
   h += fields([
     ["Change request", p.crNo + " dated " + B.dateOf(p.crDay)],
@@ -123,12 +132,15 @@ function renderRelease(item, done){
   }
   h += '</div>';
   h += sect("Related documents");
-  h += '<div class="scrollx"><table class="grid"><thead><tr><th>Type</th><th>Identifier</th><th>Revision</th></tr></thead><tbody>';
+  h += '<div class="scrollx"><table class="grid"><thead><tr><th>Type</th><th>Identifier</th><th>Revision cited</th><th>Released in the vault</th></tr></thead><tbody>';
   for (var j=0;j<p.related.length;j++){
     var r = p.related[j];
-    h += '<tr><td>' + e(r.type) + '</td><td class="m">' + e(r.id) + '</td><td class="m">' + e(r.rev) + '</td></tr>';
+    var mismatch = (r.current != null && r.current !== r.rev);
+    h += '<tr><td>' + e(r.type) + '</td><td class="m">' + e(r.id) + '</td>' +
+      '<td class="m"' + (mismatch ? ' style="color:var(--crit)"' : "") + '>' + e(r.rev) + '</td>' +
+      '<td class="m">' + e(r.current == null ? r.rev : r.current) + '</td></tr>';
   }
-  if (!p.related.length) h += '<tr><td colspan="3" class="mut">No related documents listed.</td></tr>';
+  if (!p.related.length) h += '<tr><td colspan="4" class="mut">No related documents listed.</td></tr>';
   h += '</tbody></table></div>';
 
   h += sect("Findings");
